@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sunny Heaven Broadcast Wall</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .marquee-row {
+      display: flex;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+      align-items: center;
+      height: auto;
+      margin-bottom: 30px;
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      animation: scroll-left 18s linear infinite;
+    }
+
+    .marquee-track.fast {
+      animation-duration: 8s;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .marquee-row img {
+      width: 800px;
+      height: 450px;
+      margin-right: 0;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    .marquee-text {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(24px, 3vw, 40px);
+      color: #ff69b4;
+      margin-right: 40px;
+      white-space: nowrap;
+      letter-spacing: 1px;
+      padding-top: 30px;
+      padding-bottom: 20px;
+    }
+
+    .glitch {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      color: #0f0;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      display: none;
+      z-index: 100;
+      padding: 30px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      animation: flicker 0.08s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .corrupted-img {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      z-index: 200;
+    }
+#redOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 0, 0, 0.1);
+  z-index: 201; /* 必须高于恐怖图像 */
+  pointer-events: none;
+  display: none;
+  animation: pulseRed 1s infinite;
+}
+
+@keyframes pulseRed {
+  0%   { background-color: rgba(255, 0, 0, 0.05); }
+  50%  { background-color: rgba(255, 0, 0, 0.2); }
+  100% { background-color: rgba(255, 0, 0, 0.05); }
+}
+
+  </style>
+</head>
+<body>
+
+<!-- 滚动区域 -->
+<div id="wall"></div>
+
+<!-- 电流音效 -->
+<audio id="glitchSound" src="glitch.mp3" preload="auto" loop></audio>
+
+<!-- 乱码层 -->
+<div class="glitch" id="glitch"></div>
+
+<!-- 恐怖图层 -->
+<img src="IMG_8457.PNG" id="corruptedImage" class="corrupted-img" alt="Corrupted Poster">
+<div id="redOverlay"></div>
+
+<script>
+  const NUM_ROWS = 6;
+  const wall = document.getElementById('wall');
+
+  // 生成滚动内容
+  for (let i = 0; i < NUM_ROWS; i++) {
+    const row = document.createElement('div');
+    row.classList.add('marquee-row');
+
+    const track = document.createElement('div');
+    track.classList.add('marquee-track');
+    if (i % 2 === 1) track.classList.add('fast');
+
+    for (let repeat = 0; repeat < 2; repeat++) {
+      if (i % 2 === 0) {
+        for (let j = 0; j < 8; j++) {
+          const img = document.createElement('img');
+          img.src = 'sunny-haven-poster.jpg';
+          img.width = 800;
+          img.height = 450;
+          track.appendChild(img);
+        }
+      } else {
+        const messages = ['START WORKING', 'NO LIES', 'OBEY', 'WORK = FREEDOM', 'CONSUME'];
+        for (let j = 0; j < 12; j++) {
+          const span = document.createElement('span');
+          span.className = 'marquee-text';
+          span.textContent = messages[j % messages.length];
+          track.appendChild(span);
+        }
+      }
+    }
+
+    row.appendChild(track);
+    wall.appendChild(row);
+  }
+
+  // 乱码关键词池
+  const glitchWords = [
+    'LIE', 'RUN', 'REBOOT', 'OBEY', 'RECYCLE',
+    'MEMORY FRAGMENT LOST', 'SUNNY HEAVEN IS FAKE',
+    'FREEDOM = ILLUSION', 'CLONE_ID#EXPIRED',
+    'SYSTEM ERROR', 'WAKE UP', 'EXECUTE: DESTROY'
+  ];
+
+  // 动态生成乱码内容
+ function showGlitchText() {
+  const glitch = document.getElementById('glitch');
+  const chars = '░▒▓█01@#/%$&*<>?=Ж¿ERROR你';
+  const keywords = ['LIE', 'RUN', 'REBOOT', 'SUNNY HEAVEN IS FAKE', 'OBEY', 'RECYCLE', 'WAKE UP'];
+  const blocks = [
+    '█▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒',
+    '░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░',
+    '▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓',
+    '▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒'
+  ];
+
+  let output = '';
+  for (let i = 0; i < 100; i++) {
+    let line = '';
+    const rand = Math.random();
+
+    if (rand < 0.1) {
+      line = blocks[Math.floor(Math.random() * blocks.length)];
+    } else if (rand < 0.3) {
+      line = keywords[Math.floor(Math.random() * keywords.length)];
+    } else {
+      for (let j = 0; j < 60; j++) {
+        const roll = Math.random();
+        if (roll < 0.05) {
+          const keyword = keywords[Math.floor(Math.random() * keywords.length)];
+          line += keyword + ' ';
+          j += keyword.length;
+        } else {
+          line += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+    }
+
+    output += line + '\n';
+  }
+
+  glitch.textContent = output;
+}
+
+// ⏳ 滚动速度从慢到快，制造“系统失控”效果
+function graduallySpeedUpScroll() {
+  const tracks = document.querySelectorAll('.marquee-track');
+  let duration = 20;
+
+  const interval = setInterval(() => {
+    duration -= 2;
+    if (duration <= 5) {
+      duration = 5;
+      clearInterval(interval);
+    }
+
+    tracks.forEach(track => {
+      track.style.animationDuration = duration + 's';
+    });
+  }, 1000);
+}
+
+// 启动加速（在所有 track 被插入后调用）
+graduallySpeedUpScroll();
+
+  // 触发乱码和声音
+  setTimeout(() => {
+    showGlitchText();
+    document.getElementById('glitch').style.display = 'block';
+    const glitchSound = document.getElementById('glitchSound');
+    glitchSound.volume = 0.6;
+    glitchSound.play();
+  }, 7000);
+
+  // 切换恐怖画面
+ setTimeout(() => {
+  document.getElementById('glitch').style.display = 'none';
+  document.getElementById('glitchSound').pause();
+  document.getElementById('wall').style.display = 'none';
+
+  // ✅ 显示恐怖图和红色遮罩
+  document.getElementById('corruptedImage').style.display = 'block';
+  document.getElementById('redOverlay').style.display = 'block';
+}, 11000);
+
+</script>
+
+
+</body>
+</html>
